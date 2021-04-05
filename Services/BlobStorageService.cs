@@ -1,11 +1,8 @@
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using System;
-using Azure.Storage.Cryptography;
-using Azure.Core;
 using System.Data.Common; 
 
 namespace EaglesJungscharen.MediaLibrary.Services {
