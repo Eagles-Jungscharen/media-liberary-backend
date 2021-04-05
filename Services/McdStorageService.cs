@@ -7,27 +7,31 @@ using Microsoft.Extensions.Logging;
 using WebGate.Azure.CloudTableUtils.CloudTableExtension;
 
 using EaglesJungscharen.MediaLibrary.Models;
+using EaglesJungscharen.MediaLibrary.Utils;
 
 namespace EaglesJungscharen.MediaLibrary.Services {
 
-    public class McdStoragServcie {
+    public class McdStoragService {
 
-        public async Task<List<MediaCollectionDefinition>> GetAllMediaCollectionDefinitons(CloudTable table) {
-            return await table.GetAllAsync<MediaCollectionDefinition>("mcd");
+        private CloudTable _table {get;}
+
+        public McdStoragService(CloudTable ct) {
+            _table = ct;
         }
 
-        public async Task<MediaCollectionDefinition> GetMediaCollectionDefinitonById(CloudTable table, string id) {
-            return await table.GetByIdAsync<MediaCollectionDefinition>(id, "mcd");
+        public async Task<List<MediaCollectionDefinition>> GetAllMediaCollectionDefinitons(FunctionRunContext frc) {
+            return await _table.GetAllAsync<MediaCollectionDefinition>("mcd");
         }
 
-        public async Task<MediaCollectionDefinition> SaveMediaCollectionDefintion(CloudTable table, MediaCollectionDefinition mcd, ILogger logger) {
+        public async Task<MediaCollectionDefinition> GetMediaCollectionDefinitonById(string id, FunctionRunContext frc) {
+            return await _table.GetByIdAsync<MediaCollectionDefinition>(id, "mcd");
+        }
+
+        public async Task<MediaCollectionDefinition> SaveMediaCollectionDefintion(MediaCollectionDefinition mcd, FunctionRunContext frc) {
             if (mcd.Id == "@new" || string.IsNullOrEmpty(mcd.Id)) {
                 mcd.Id = Guid.NewGuid().ToString();
             }
-            
-            logger.LogInformation("ID ist nun: "+ mcd.Id);
-            TableResult result = await table.InsertOrReplaceAsync(mcd.Id, "mcd", mcd);
-            logger.LogInformation("HTTP Status Code:"+result.HttpStatusCode);
+            TableResult result = await _table.InsertOrReplaceAsync(mcd.Id, "mcd", mcd);
             return mcd;
         }
 
