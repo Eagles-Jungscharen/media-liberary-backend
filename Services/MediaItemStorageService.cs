@@ -20,6 +20,9 @@ namespace EaglesJungscharen.MediaLibrary.Services {
         public async Task<MediaItem> GetItemById(string id) {
             return await _mediaItemTable.GetByIdAsync<MediaItem>(id, "mediaitem");
         }
+        public async Task<List<MediaItem>> GetAllItems() {
+            return await _mediaItemTable.GetAllAsync<MediaItem>("mediaitem");
+        }
         public async Task<List<MediaItem>> GetAllItemForCollection(string cid) {
             TableQuery<DynamicTableEntity> query = new TableQuery<DynamicTableEntity>();
             query.Where(TableQuery.GenerateFilterCondition("MediaCollectionId",QueryComparisons.Equal,cid));
@@ -39,8 +42,11 @@ namespace EaglesJungscharen.MediaLibrary.Services {
             if (item.Id == "@new") {
                 item.Id = Guid.NewGuid().ToString();
                 item.Entries.ForEach(entry=> entry.MediaItemId = item.Id);
+                item.Created = DateTime.Now;
+                item.ItemDate = DateTime.Now;
             }
-            await _mediaItemTable.InsertOrReplaceAsync(item.Id, "mediaitem",item);
+            TableResult res =await _mediaItemTable.InsertOrReplaceAsync(item.Id, "mediaitem",item);
+            frc.Log.LogInformation(""+res.HttpStatusCode);
             return item;
         }
     }

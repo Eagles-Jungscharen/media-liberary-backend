@@ -46,7 +46,8 @@ namespace EaglesJungscharen.MediaLibrary.Services {
                 log.LogInformation("No kid found in token");
                 throw new AuthenticationException("No kid in JWT found");
             }
-            SecurityKey securityKey = await GetJsonWebKeyAsync(kid, client);
+            log.LogInformation("Client: "+ client);
+            SecurityKey securityKey = await GetJsonWebKeyAsync(kid, client, log);
             if (securityKey == null) {
                 throw new AuthenticationException("kid = "+ kid + " not found in IDP");
             }
@@ -73,7 +74,7 @@ namespace EaglesJungscharen.MediaLibrary.Services {
             return user;
         }
 
-        public async Task<SecurityKey> GetJsonWebKeyAsync(string id, HttpClient client) {
+        public async Task<SecurityKey> GetJsonWebKeyAsync(string id, HttpClient client, ILogger log) {
             if (_publicKeys.ContainsKey(id)) {
                 return _publicKeys[id];
             }
@@ -90,6 +91,7 @@ namespace EaglesJungscharen.MediaLibrary.Services {
                 _publicKeys.Add(id, securityKey);
                 return securityKey;
             } catch(Exception e) {
+                log.LogError(e.Message);
                 throw new AuthenticationException("Access to IDP Keys failed: "+ _CTIDEPUrl, e);
             }
         }

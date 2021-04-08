@@ -39,7 +39,7 @@ namespace EaglesJungscharen.MediaLibrary
 
                 if (req.Method == HttpMethods.Get) {
                     if (string.IsNullOrEmpty(id)) {
-                        return new BadRequestObjectResult(new {error="Not supported"});
+                        return new OkObjectResult(miStorageService.GetAllItems());
                     } 
                     if (id == "@collection") {
                         string collectionId = req.Query["cid"];
@@ -62,7 +62,7 @@ namespace EaglesJungscharen.MediaLibrary
                 return new UnauthorizedObjectResult(new {error=e.Message, trace=e.StackTrace});
             }
              catch(Exception e) {
-                return new BadRequestObjectResult(e);
+                return new BadRequestObjectResult(new {error=e.Message, trace=e.StackTrace});
             }
         }
     }

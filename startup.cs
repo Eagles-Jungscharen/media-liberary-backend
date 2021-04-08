@@ -15,6 +15,11 @@ namespace EaglesJungscharen.MediaLibrary
                 {
                     UseCookies=false
                 });
+            builder.Services.AddHttpClient<McdApi>().ConfigureHttpClient(config => new HttpClientHandler
+                {
+                    UseCookies=false
+                });
+            
             
             builder.Services.AddSingleton<JWTAuthService>((s) => {
                 return new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"));

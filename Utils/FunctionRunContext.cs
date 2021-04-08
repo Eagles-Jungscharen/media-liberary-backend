@@ -23,6 +23,7 @@ namespace EaglesJungscharen.MediaLibrary.Utils
             _request = request;
             Log = log;
             Environment = GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT");
+            Client = client;
         }
 
         public async Task CheckAuthentication(JWTAuthService service) {
