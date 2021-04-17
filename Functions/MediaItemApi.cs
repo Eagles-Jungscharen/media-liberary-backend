@@ -39,16 +39,16 @@ namespace EaglesJungscharen.MediaLibrary
 
                 if (req.Method == HttpMethods.Get) {
                     if (string.IsNullOrEmpty(id)) {
-                        return new OkObjectResult(miStorageService.GetAllItems());
+                        return new OkObjectResult(await miStorageService.GetAllItems());
                     } 
                     if (id == "@collection") {
                         string collectionId = req.Query["cid"];
                         if (string.IsNullOrEmpty(collectionId)) {
                             return new BadRequestObjectResult(new {error="Missing parameter cid"});
                         }
-                        return new OkObjectResult(miStorageService.GetAllItemForCollection(collectionId));
+                        return new OkObjectResult(await miStorageService.GetAllItemForCollection(collectionId));
                     }
-                    return new OkObjectResult(miStorageService.GetItemById(id));
+                    return new OkObjectResult(await miStorageService.GetItemById(id));
                 } else {
                     MediaItem item = await frc.GetPayLoad<MediaItem>();
                     if (string.IsNullOrEmpty(item.MediaCollectionId)) {

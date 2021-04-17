@@ -2,8 +2,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using System;
@@ -34,7 +32,6 @@ namespace EaglesJungscharen.MediaLibrary.Services {
                 throw new AuthenticationException("Wrong Tokentype, needs Bearer");
             }
             string jwtTokenPart = authentication.Substring(7);
-            log.LogInformation("TOKEN: "+ jwtTokenPart);
             return await CheckJWTToken(jwtTokenPart, client, log);
         }
 
@@ -46,7 +43,6 @@ namespace EaglesJungscharen.MediaLibrary.Services {
                 log.LogInformation("No kid found in token");
                 throw new AuthenticationException("No kid in JWT found");
             }
-            log.LogInformation("Client: "+ client);
             SecurityKey securityKey = await GetJsonWebKeyAsync(kid, client, log);
             if (securityKey == null) {
                 throw new AuthenticationException("kid = "+ kid + " not found in IDP");
@@ -69,8 +65,6 @@ namespace EaglesJungscharen.MediaLibrary.Services {
                 LastName = jwt.Claims.FirstOrDefault(claim=>claim.Type=="lastname")?.Value ?? string.Empty,
                 EMail = jwt.Claims.FirstOrDefault(claim=>claim.Type=="email")?.Value ?? string.Empty
             };
-            log.LogInformation("Expires..."+jwt.ValidTo);
-            log.LogInformation("User EMail="+user.EMail);
             return user;
         }
 
@@ -91,7 +85,6 @@ namespace EaglesJungscharen.MediaLibrary.Services {
                 _publicKeys.Add(id, securityKey);
                 return securityKey;
             } catch(Exception e) {
-                log.LogError(e.Message);
                 throw new AuthenticationException("Access to IDP Keys failed: "+ _CTIDEPUrl, e);
             }
         }
