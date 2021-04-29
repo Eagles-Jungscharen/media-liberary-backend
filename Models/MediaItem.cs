@@ -21,5 +21,6 @@ namespace EaglesJungscharen.MediaLibrary.Models {
         public string MediaItemId {set;get;}
         public string CollectionItemKey {set;get;}
         public string Value {set;get;}
+        public string DownloadUrl {set;get;}
     }
 }

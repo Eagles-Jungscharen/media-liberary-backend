@@ -30,7 +30,7 @@ namespace EaglesJungscharen.MediaLibrary.Services {
         }
         public async Task<List<MediaItem>> GetAllPublicItemForCollection(string cid) {
             TableQuery<DynamicTableEntity> query = new TableQuery<DynamicTableEntity>();
-            query.Where(TableQuery.CombineFilters(TableQuery.GenerateFilterCondition("MediaCollectionId",QueryComparisons.Equal,cid),TableOperators.And, TableQuery.GenerateFilterConditionForBool("Public", QueryComparisons.Equal, true)));
+            query.Where(TableQuery.CombineFilters(TableQuery.GenerateFilterCondition("MediaCollectionId",QueryComparisons.Equal,cid),TableOperators.And, TableQuery.GenerateFilterConditionForBool("Published", QueryComparisons.Equal, true)));
             return await _mediaItemTable.GetAllByQueryAsync<MediaItem>(query);
         }
 
@@ -49,5 +49,40 @@ namespace EaglesJungscharen.MediaLibrary.Services {
             frc.Log.LogInformation(""+res.HttpStatusCode);
             return item;
         }
+
+        public async Task<MediaItem> UpdateMediaItem(UpdateMediaItemRequest updateMediaItemRequest, FunctionRunContext frc) {
+            MediaItem mi = await GetItemById(updateMediaItemRequest.MediaItemId);
+            MediaItemEntry entry = mi.Entries.Find(entry=> entry.CollectionItemKey == updateMediaItemRequest.MediaKey);
+            if (entry == null) {
+                throw new FunctionException("No Entry found for Key: "+ updateMediaItemRequest.MediaKey, 400);
+            }
+            entry.Value = updateMediaItemRequest.MediaName;
+            await Save(mi,frc);
+            return mi;
+        }
+        public async Task<MediaItem> DeleteMediaItemContent(UpdateMediaItemRequest updateMediaItemRequest, FunctionRunContext frc) {
+            MediaItem mi = await GetItemById(updateMediaItemRequest.MediaItemId);
+            MediaItemEntry entry = mi.Entries.Find(entry=> entry.CollectionItemKey == updateMediaItemRequest.MediaKey);
+            if (entry == null) {
+                throw new FunctionException("No Entry found for Key: "+ updateMediaItemRequest.MediaKey, 400);
+            }
+            entry.Value = "";
+            await Save(mi,frc);
+            return mi;
+        }
+
+        public async Task<MediaItem> Publish(string id, FunctionRunContext frc) {
+            MediaItem mi = await GetItemById(id);
+            mi.Published = true;
+            await Save(mi,frc);
+            return mi;
+        }
+        public async Task<MediaItem> Unpublish(string id, FunctionRunContext frc) {
+            MediaItem mi = await GetItemById(id);
+            mi.Published = false;
+            await Save(mi,frc);
+            return mi;
+        }
+
     }
 }

@@ -24,7 +24,7 @@ namespace EaglesJungscharen.MediaLibrary
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
             if (_jwtAuthService == null) {
-                _jwtAuthService = new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"));
+                _jwtAuthService = new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"),System.Environment.GetEnvironmentVariable("ADMIN_SCOPE"),System.Environment.GetEnvironmentVariable("CONTRIBUTOR_SCOPE"));
             }
             User user = null;
             try {
@@ -34,11 +34,11 @@ namespace EaglesJungscharen.MediaLibrary
             }
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             GetUploadUrlRequest gur = JsonConvert.DeserializeObject<GetUploadUrlRequest>(requestBody);
-            if (String.IsNullOrEmpty(gur.TargetMediaItemId) || String.IsNullOrEmpty(gur.MediaName)) {
-                return new BadRequestObjectResult(new {status = "error", error="TargetMediaItemId and MediaName should not be null or empty"});
+            if (String.IsNullOrEmpty(gur.TargetMediaItemId) || String.IsNullOrEmpty(gur.MediaName) || String.IsNullOrEmpty(gur.MediaKey)) {
+                return new BadRequestObjectResult(new {status = "error", error="TargetMediaItemId, MediaName and MediaKey should not be null or empty"});
             } 
             BlobStorageService service = new BlobStorageService("media");
-            string url = service.BuildUploadUrl(gur.TargetMediaItemId, gur.MediaName);
+            string url = service.BuildUploadUrl(gur.TargetMediaItemId, gur.MediaName, gur.MediaKey);
             return new OkObjectResult(new { url=url});
         }
     }

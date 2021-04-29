@@ -17,10 +17,14 @@ using EaglesJungscharen.MediaLibrary.Models;
 namespace EaglesJungscharen.MediaLibrary.Services {
     public class JWTAuthService {
         private string _CTIDEPUrl;
+        private string _AdminScope;
+        private string _ContributorScope;
 
         private IDictionary<string,SecurityKey> _publicKeys =new Dictionary<string,SecurityKey>();
-        public JWTAuthService(string ctIDPUrl) {
+        public JWTAuthService(string ctIDPUrl, string adminScope, string contributorScope) {
             _CTIDEPUrl = ctIDPUrl;
+            _AdminScope = adminScope;
+            _ContributorScope = contributorScope;
         }
 
         public async Task<User> IsAuthencticated(HttpRequest request, HttpClient client, ILogger log) {
@@ -63,8 +67,11 @@ namespace EaglesJungscharen.MediaLibrary.Services {
             User user = new User() {
                 FirstName = jwt.Claims.FirstOrDefault(claim=>claim.Type=="firstname")?.Value ?? string.Empty,
                 LastName = jwt.Claims.FirstOrDefault(claim=>claim.Type=="lastname")?.Value ?? string.Empty,
-                EMail = jwt.Claims.FirstOrDefault(claim=>claim.Type=="email")?.Value ?? string.Empty
+                EMail = jwt.Claims.FirstOrDefault(claim=>claim.Type=="email")?.Value ?? string.Empty,
+                Scopes = jwt.Claims.Where(claim=>claim.Type=="scopes").Select(fclaim=>fclaim.Value).ToList()
             };
+            user.IsAdmin = user.Scopes.Contains(_AdminScope);
+            user.IsContributor = user.Scopes.Contains(_ContributorScope);
             return user;
         }
 
@@ -82,10 +89,12 @@ namespace EaglesJungscharen.MediaLibrary.Services {
                     return null;
                 }
                 SecurityKey securityKey = BuildSecurityKeyFromJsonWebKey(jwk);
-                _publicKeys.Add(id, securityKey);
+                if (!_publicKeys.ContainsKey(id)) {
+                    _publicKeys.Add(id, securityKey);
+                }
                 return securityKey;
             } catch(Exception e) {
-                throw new AuthenticationException("Access to IDP Keys failed: "+ _CTIDEPUrl, e);
+                throw new AuthenticationException("Access to IDP Keys failed: "+ _CTIDEPUrl +" Reason: "+e.Message +" -> "+e.Source, e);
             }
         }
         SecurityKey BuildSecurityKeyFromJsonWebKey(JsonWebKey jwk) {

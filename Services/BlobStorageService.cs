@@ -22,8 +22,8 @@ namespace EaglesJungscharen.MediaLibrary.Services {
 
         }
         
-        public string BuildUploadUrl(string mediaItemId, string mediaItemFileName) {
-            string blobUrlPart = $"{mediaItemId}/{mediaItemFileName}";
+        public string BuildUploadUrl(string mediaItemId, string mediaItemFileName, string mediaKey) {
+            string blobUrlPart = $"{mediaItemId}/{mediaKey}/{mediaItemFileName}";
             var blobSasBuilder = new BlobSasBuilder
             {
                 StartsOn = DateTime.UtcNow - TimeSpan.FromMinutes(5),
@@ -42,5 +42,13 @@ namespace EaglesJungscharen.MediaLibrary.Services {
             return sasUri.ToUri().ToString();
         }
 
-    }
+        public bool DeleteMediaItemContent(string mediaItemId, string mediaItemFileName, string mediaKey) {
+            string blobUrlPart = $"{mediaItemId}/{mediaKey}/{mediaItemFileName}";
+            return  _blobContainerClient.DeleteBlobIfExists(blobUrlPart).Value;
+        }
+        public string BuildDownloadUrl(string mediaItemId, string mediaItemFileName, string mediaKey) {
+            string blobUrlPart = $"/{mediaItemId}/{mediaKey}/{mediaItemFileName}";
+            return _blobContainerClient.Uri.AbsoluteUri + blobUrlPart;
+        }
+   }
 }

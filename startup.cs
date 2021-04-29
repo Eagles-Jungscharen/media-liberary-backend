@@ -22,7 +22,10 @@ namespace EaglesJungscharen.MediaLibrary
             
             
             builder.Services.AddSingleton<JWTAuthService>((s) => {
-                return new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"));
+                return new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"),System.Environment.GetEnvironmentVariable("ADMIN_SCOPE"),System.Environment.GetEnvironmentVariable("CONTRIBUTOR_SCOPE"));
+            });
+            builder.Services.AddSingleton<BlobStorageService>((s) => {
+                return new BlobStorageService("media");
             });
 
         }
