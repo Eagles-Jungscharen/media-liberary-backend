@@ -8,5 +8,7 @@ namespace EaglesJungscharen.MediaLibrary.Models {
         public List<string> Scopes {set;get;}
         public bool IsAdmin {set;get;}
         public bool IsContributor {set;get;}
+        public bool IsPictureAdmin {set;get;}
+        public bool IsPictureContributor {set;get;}
     }
 }

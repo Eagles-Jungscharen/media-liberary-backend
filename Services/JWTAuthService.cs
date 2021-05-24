@@ -19,12 +19,16 @@ namespace EaglesJungscharen.MediaLibrary.Services {
         private string _CTIDEPUrl;
         private string _AdminScope;
         private string _ContributorScope;
+        private string _PictureContributorScope;
+        private string _PictureAdminScope;
 
         private IDictionary<string,SecurityKey> _publicKeys =new Dictionary<string,SecurityKey>();
-        public JWTAuthService(string ctIDPUrl, string adminScope, string contributorScope) {
+        public JWTAuthService(string ctIDPUrl, string adminScope, string contributorScope, string pictureContributerScope, string pictureAdminScope) {
             _CTIDEPUrl = ctIDPUrl;
             _AdminScope = adminScope;
             _ContributorScope = contributorScope;
+            _PictureAdminScope = pictureAdminScope;
+            _PictureContributorScope = pictureContributerScope;
         }
 
         public async Task<User> IsAuthencticated(HttpRequest request, HttpClient client, ILogger log) {
@@ -72,6 +76,8 @@ namespace EaglesJungscharen.MediaLibrary.Services {
             };
             user.IsAdmin = user.Scopes.Contains(_AdminScope);
             user.IsContributor = user.Scopes.Contains(_ContributorScope);
+            user.IsPictureAdmin = user.Scopes.Contains(_PictureAdminScope);
+            user.IsPictureContributor = user.Scopes.Contains(_PictureContributorScope);
             return user;
         }
 

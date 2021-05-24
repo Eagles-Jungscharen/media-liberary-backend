@@ -7,17 +7,16 @@ using System.Data.Common;
 
 namespace EaglesJungscharen.MediaLibrary.Services {
 
-    public class  BlobStorageService {
+    public abstract class BlobStorageService {
         private BlobContainerClient _blobContainerClient;
         private StorageSharedKeyCredential _storageSharedKeyCredential;
         private string _blobContainerName;
-        public BlobStorageService(string blobContainerName) {
+        public BlobStorageService(string connectionString, string blobContainerName) {
             _blobContainerName = blobContainerName;
-             string connection = System.Environment.GetEnvironmentVariable("AzureWebJobsStorage");
-             _blobContainerClient = new BlobContainerClient(connection, _blobContainerName);
+             _blobContainerClient = new BlobContainerClient(connectionString , _blobContainerName);
              _blobContainerClient.CreateIfNotExists(PublicAccessType.Blob);
              var conBuilder = new DbConnectionStringBuilder();
-            conBuilder.ConnectionString = connection;
+            conBuilder.ConnectionString = connectionString;
             _storageSharedKeyCredential = new StorageSharedKeyCredential(conBuilder["AccountName"] as string, conBuilder["AccountKey"] as string);
 
         }
@@ -50,5 +49,18 @@ namespace EaglesJungscharen.MediaLibrary.Services {
             string blobUrlPart = $"/{mediaItemId}/{mediaKey}/{mediaItemFileName}";
             return _blobContainerClient.Uri.AbsoluteUri + blobUrlPart;
         }
+   }
+
+   public class MediaBlobStorageService:BlobStorageService {
+
+       public MediaBlobStorageService(string connectionString):base(connectionString, "media") {
+
+       }
+   }
+      public class PictureBlobStorageService:BlobStorageService {
+
+       public PictureBlobStorageService(string connectionString):base(connectionString, "picture") {
+           
+       }
    }
 }

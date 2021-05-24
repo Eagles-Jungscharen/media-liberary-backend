@@ -19,13 +19,24 @@ namespace EaglesJungscharen.MediaLibrary
                 {
                     UseCookies=false
                 });
+            builder.Services.AddHttpClient<PcdApi>().ConfigureHttpClient(config => new HttpClientHandler
+                {
+                    UseCookies=false
+                });
+            builder.Services.AddHttpClient<GetUploadUrl>().ConfigureHttpClient(config => new HttpClientHandler
+                {
+                    UseCookies=false
+                });
             
             
             builder.Services.AddSingleton<JWTAuthService>((s) => {
-                return new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"),System.Environment.GetEnvironmentVariable("ADMIN_SCOPE"),System.Environment.GetEnvironmentVariable("CONTRIBUTOR_SCOPE"));
+                return new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"),System.Environment.GetEnvironmentVariable("ADMIN_SCOPE"),System.Environment.GetEnvironmentVariable("CONTRIBUTOR_SCOPE"),System.Environment.GetEnvironmentVariable("PICTURE_ADMIN_SCOPE"),System.Environment.GetEnvironmentVariable("PICTURE_CONTRIBUTOR_SCOPE"));
             });
-            builder.Services.AddSingleton<BlobStorageService>((s) => {
-                return new BlobStorageService("media");
+            builder.Services.AddSingleton<MediaBlobStorageService>((s) => {
+                return new MediaBlobStorageService(System.Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
+            });
+            builder.Services.AddSingleton<PictureBlobStorageService>((s) => {
+                return new PictureBlobStorageService(System.Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
             });
 
         }

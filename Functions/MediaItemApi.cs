@@ -21,12 +21,12 @@ namespace EaglesJungscharen.MediaLibrary
     {
         private JWTAuthService _jwtAuthService;
         private HttpClient _httpClient;
-        private BlobStorageService _blobStorageService;
+        private MediaBlobStorageService _mediaBlobStorageService;
 
-        public MediaItemApi(JWTAuthService authService, HttpClient httpClient, BlobStorageService blobStorageService) {
+        public MediaItemApi(JWTAuthService authService, HttpClient httpClient, MediaBlobStorageService mediaBlobStorageService) {
             this._jwtAuthService = authService;
             this._httpClient = httpClient;
-            this._blobStorageService = blobStorageService;
+            this._mediaBlobStorageService = mediaBlobStorageService;
 
         }
 
@@ -150,7 +150,7 @@ namespace EaglesJungscharen.MediaLibrary
                 if (string.IsNullOrEmpty(updateRequest.MediaItemId)) {
                     return new BadRequestObjectResult(new {error= "No MediaItemId provided!"});
                 }
-                bool result = _blobStorageService.DeleteMediaItemContent(updateRequest.MediaItemId, updateRequest.MediaName, updateRequest.MediaKey);
+                bool result = _mediaBlobStorageService.DeleteMediaItemContent(updateRequest.MediaItemId, updateRequest.MediaName, updateRequest.MediaKey);
                 frc.Log.LogInformation("Blob Deletion Result: "+result);
                 return new OkObjectResult(EnrichMediaItem(await miStorageService.DeleteMediaItemContent(updateRequest,frc)));
             } catch(AuthenticationException e) {
@@ -188,7 +188,7 @@ namespace EaglesJungscharen.MediaLibrary
 
         private MediaItemEntry EnrichMediaItemEntry (MediaItemEntry entry) {
             if (!String.IsNullOrEmpty(entry.Value)) {
-                entry.DownloadUrl = _blobStorageService.BuildDownloadUrl(entry.MediaItemId, entry.Value,entry.CollectionItemKey);
+                entry.DownloadUrl = _mediaBlobStorageService.BuildDownloadUrl(entry.MediaItemId, entry.Value,entry.CollectionItemKey);
             }
             return entry;
         }

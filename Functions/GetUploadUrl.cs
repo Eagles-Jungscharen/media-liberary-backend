@@ -13,22 +13,28 @@ using EaglesJungscharen.MediaLibrary.Services;
 
 namespace EaglesJungscharen.MediaLibrary
 {
-    public static class GetUploadUrl
+    public class GetUploadUrl
     {
-        private static JWTAuthService _jwtAuthService;
-        private static HttpClient httpClient = new HttpClient(new HttpClientHandler(){UseCookies=false});
+        private JWTAuthService _jwtAuthService;
+        private HttpClient _httpClient = new HttpClient(new HttpClientHandler(){UseCookies=false});
+
+        private MediaBlobStorageService _mediaBlobStorageService;
+        private PictureBlobStorageService _pictureBlobStorageService;
+
+        public GetUploadUrl(JWTAuthService authService, HttpClient httpClient, MediaBlobStorageService mediaBlobStorageService, PictureBlobStorageService pictureBlobStorageService) {
+            this._jwtAuthService = authService;
+            this._httpClient = httpClient;
+            this._mediaBlobStorageService = mediaBlobStorageService;
+            this._pictureBlobStorageService = pictureBlobStorageService;
+        }
         [FunctionName("GetUploadUrl")]
-        public static async Task<IActionResult> Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-            if (_jwtAuthService == null) {
-                _jwtAuthService = new JWTAuthService(System.Environment.GetEnvironmentVariable("IDP_URL"),System.Environment.GetEnvironmentVariable("ADMIN_SCOPE"),System.Environment.GetEnvironmentVariable("CONTRIBUTOR_SCOPE"));
-            }
             User user = null;
             try {
-                user = await _jwtAuthService.IsAuthencticated(req, httpClient, log);
+                user = await _jwtAuthService.IsAuthencticated(req, _httpClient, log);
             } catch(Exception e) {
                 return new BadRequestObjectResult(e);
             }
@@ -37,8 +43,27 @@ namespace EaglesJungscharen.MediaLibrary
             if (String.IsNullOrEmpty(gur.TargetMediaItemId) || String.IsNullOrEmpty(gur.MediaName) || String.IsNullOrEmpty(gur.MediaKey)) {
                 return new BadRequestObjectResult(new {status = "error", error="TargetMediaItemId, MediaName and MediaKey should not be null or empty"});
             } 
-            BlobStorageService service = new BlobStorageService("media");
-            string url = service.BuildUploadUrl(gur.TargetMediaItemId, gur.MediaName, gur.MediaKey);
+            string url = _mediaBlobStorageService.BuildUploadUrl(gur.TargetMediaItemId, gur.MediaName, gur.MediaKey);
+            return new OkObjectResult(new { url=url});
+        }
+
+        [FunctionName("GetPictureUploadUrl")]
+        public async Task<IActionResult> RunPictureUploadUrl(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
+            ILogger log)
+        {
+            User user = null;
+            try {
+                user = await _jwtAuthService.IsAuthencticated(req, _httpClient, log);
+            } catch(Exception e) {
+                return new BadRequestObjectResult(e);
+            }
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            GetPictureUploadUrlRequest gur = JsonConvert.DeserializeObject<GetPictureUploadUrlRequest>(requestBody);
+            if (String.IsNullOrEmpty(gur.TargetPictureItemId) || String.IsNullOrEmpty(gur.MediaName)) {
+                return new BadRequestObjectResult(new {status = "error", error="TargetMediaItemId, MediaName and MediaKey should not be null or empty"});
+            } 
+            string url = _pictureBlobStorageService.BuildUploadUrl(gur.TargetPictureItemId, gur.MediaName, "original");
             return new OkObjectResult(new { url=url});
         }
     }
