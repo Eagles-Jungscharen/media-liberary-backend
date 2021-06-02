@@ -166,7 +166,9 @@ namespace EaglesJungscharen.MediaLibrary
             [Table("MediaItem")] CloudTable miTable, ILogger log, string id)
         {
             MediaItemStorageService miStorageService = new MediaItemStorageService(miTable);
-            return new OkObjectResult(EnrichMediaItemList(await miStorageService.GetAllPublicItemForCollection(id)));
+            List<MediaItem> items = EnrichMediaItemList(await miStorageService.GetAllPublicItemForCollection(id));
+            items.Sort((item1,item2)=>item2.ItemDate.CompareTo(item1.ItemDate));
+            return new OkObjectResult(items);
         }
  
         [FunctionName("me")]
